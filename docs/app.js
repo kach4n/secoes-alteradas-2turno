@@ -62,6 +62,21 @@ fVersao.addEventListener('change', () => {
   location.href = u.toString();
 });
 
+// Quadro de checagem: do número divulgado na imprensa até a versão mais recente do TSE
+const DIVULGADO = { rotulo: '17/10', secoes: 4352, fonte: 'número divulgado à imprensa' };
+function desenharChecagem() {
+  document.getElementById('avisoAtual').textContent = fmt.format(ultima.secoes);
+  document.getElementById('avisoAtualQuando').textContent = `lista atual do TSE (painel de ${ultima.painel})`;
+  const pontos = [DIVULGADO, ...VERSOES.map((v) => ({ rotulo: v.rotulo, secoes: v.secoes, fonte: 'painel do TSE' }))];
+  document.getElementById('linhaTempo').innerHTML = pontos.map((p, i) => {
+    const ant = pontos[i - 1];
+    const queda = ant ? ` <span class="queda">(${p.secoes < ant.secoes ? '−' : '+'}${fmt.format(Math.abs(p.secoes - ant.secoes))})</span>` : '';
+    return `<li${i === pontos.length - 1 ? ' class="ultimo"' : ''}><span class="quando">${p.rotulo}</span>
+      <b>${fmt.format(p.secoes)}</b> seções${queda} · ${p.fonte}</li>`;
+  }).join('') +
+    `<li class="note" style="list-style:none">Queda total: ${pct(1 - ultima.secoes / DIVULGADO.secoes)} desde o primeiro número.</li>`;
+}
+
 function desenharHistorico() {
   const link = (v) => (v === ultima ? '?' : `?versao=${v.id}`);
   const linhas = VERSOES.map((v, i) => {
@@ -382,5 +397,6 @@ document.getElementById('rodape').innerHTML =
   ${semCoord} sem coordenadas nos dois turnos (ficam fora do cálculo de distância e aparecem no centro do município).
   Distância é em linha reta entre o local antigo e o novo; não indica se ficou mais perto ou mais longe da casa do eleitor.`;
 
+desenharChecagem();
 desenharHistorico();
 atualizar(true);
