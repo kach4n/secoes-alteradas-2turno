@@ -3,7 +3,7 @@
 Site (Leaflet + OpenStreetMap) que cruza as seções cujo local de votação mudou entre o 1º e o 2º turno
 com o resultado de Presidente no 1º turno, seção por seção.
 
-Publicado em https://kach4n.github.io/eleitoral/
+Publicado em https://kach4n.github.io/secoes-alteradas-2turno/
 
 ## Abrir o site localmente
 
