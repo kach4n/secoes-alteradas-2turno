@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seções Alteradas 2º Turno</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root {
+    --bg: #f6f6f4; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6b66; --line: #e3e2dd;
+    --lula: #d62d2d; --bolso: #1f5fbf; --neutro: #8a8a85; --accent: #0f766e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel);
+    display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  .controls { margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  select, input[type=number] { font: inherit; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(380px, 1fr); height: calc(100% - 58px); }
+  #map { height: 100%; }
+  aside { overflow-y: auto; padding: 16px 18px 40px; border-left: 1px solid var(--line); }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 22px 0 8px; }
+  h2:first-child { margin-top: 0; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  .kpi b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .kpi span { color: var(--muted); font-size: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .bar { display: flex; height: 22px; border-radius: 4px; overflow: hidden; margin: 6px 0 2px; background: #eee; }
+  .bar div { height: 100%; }
+  .legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .row { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; margin: 8px 0; }
+  .row label { font-size: 12.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { cursor: pointer; user-select: none; color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--bg); }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: #fff; }
+  .tag { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .note { color: var(--muted); font-size: 12px; }
+  .tablewrap { max-height: 420px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+  .tabs button { font: inherit; font-size: 12.5px; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+  .tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .leaflet-popup-content { font-size: 12.5px; }
+  .leaflet-popup-content h3 { margin: 0 0 4px; font-size: 14px; }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; height: auto; }
+    #map { height: 60vh; }
+    aside { border-left: 0; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Seções eleitorais alteradas no 2º turno · 2026</h1>
+  <span class="sub">Locais de votação que mudaram entre o 1º e o 2º turno × resultado de Presidente no 1º turno (TSE)</span>
+  <div class="controls">
+    <label>UF <select id="fUf"><option value="">Brasil</option></select></label>
+    <label>Distância mín. (km) <input id="fDist" type="number" min="0" step="0.5" value="0" style="width:70px"></label>
+    <label>Camada <select id="fLayer">
+      <option value="mun">Cidades</option>
+      <option value="sec">Seções (antigo → novo)</option>
+      <option value="both">Ambas</option>
+    </select></label>
+  </div>
+</header>
+<main>
+  <div id="map"></div>
+  <aside>
+    <h2>Resumo</h2>
+    <div class="kpis" id="kpis"></div>
+
+    <h2>Votos do 1º turno nas seções alteradas</h2>
+    <div class="card" id="votosCard"></div>
+
+    <h2>Quem é mais afetado?</h2>
+    <div class="card" id="impactoCard"></div>
+
+    <h2>Ranking</h2>
+    <div class="tabs">
+      <button data-t="mun" class="on">Cidades</button>
+      <button data-t="zona">Zonas</button>
+      <button data-t="sec">Seções</button>
+    </div>
+    <div class="tablewrap"><table id="tabela"></table></div>
+    <p class="note" id="rodape"></p>
+  </aside>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
