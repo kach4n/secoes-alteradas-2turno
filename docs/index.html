@@ -4,64 +4,118 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Seções Alteradas 2º Turno</title>
+<meta name="description" content="Seções eleitorais com local de votação alterado entre o 1º e o 2º turno de 2026, cruzadas com a votação para Presidente no 1º turno (dados do TSE).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root {
-    --bg: #f6f6f4; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6b66; --line: #e3e2dd;
-    --lula: #d62d2d; --bolso: #1f5fbf; --neutro: #8a8a85; --accent: #0f766e;
+    --bg: #f4f2ed; --panel: #ffffff; --ink: #17181c; --muted: #6a6b70; --line: #e4e1d9; --soft: #faf9f6;
+    --lula: #d62d2d; --bolso: #1f5fbf; --neutro: #8a8a85;
+    --brand: #14213d; --warn-bg: #fff6e0; --warn-line: #f0c96a; --warn-ink: #7a5300;
+    --shadow: 0 1px 2px rgba(20, 20, 30, .05), 0 4px 14px rgba(20, 20, 30, .05);
+    --radius: 12px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
-    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  header { padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel);
-    display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
-  header h1 { font-size: 18px; margin: 0; }
-  header .sub { color: var(--muted); font-size: 13px; }
+    font: 14px/1.5 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: var(--bolso); text-underline-offset: 2px; }
+
+  header { background: var(--brand); color: #fff; padding: 16px 22px 14px; display: flex; gap: 18px;
+    align-items: center; flex-wrap: wrap; }
+  .marca { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .marca .eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #9fb0d6; font-weight: 600; }
+  header h1 { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 22px; line-height: 1.15; margin: 0; }
+  header .sub { color: #c9d2e8; font-size: 13px; }
   .controls { margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  select, input[type=number] { font: inherit; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
-  main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(380px, 1fr); height: calc(100% - 58px); }
+  .controls label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; letter-spacing: .04em;
+    text-transform: uppercase; color: #9fb0d6; font-weight: 600; }
+  select, input[type=number] { font: inherit; font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--ink);
+    padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  header select, header input { border-color: transparent; min-height: 32px; }
+
+  body { display: flex; flex-direction: column; }
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(400px, 1fr); }
   #map { height: 100%; }
-  aside { overflow-y: auto; padding: 16px 18px 40px; border-left: 1px solid var(--line); }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 22px 0 8px; }
-  h2:first-child { margin-top: 0; }
-  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
-  .kpi b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  aside { overflow-y: auto; padding: 18px 20px 48px; display: flex; flex-direction: column; gap: 14px; }
+  h2 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 10px 0 -4px; font-weight: 700; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); }
+  .kpi b { display: block; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
   .kpi span { color: var(--muted); font-size: 12px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
-  .bar { display: flex; height: 22px; border-radius: 4px; overflow: hidden; margin: 6px 0 2px; background: #eee; }
+  .kpi.destaque { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .kpi.destaque span { color: #c9d2e8; }
+
+  .aviso { background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: var(--radius); padding: 14px 16px; color: #3d2c00; }
+  .aviso .tit { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--warn-ink); font-size: 12px;
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .aviso .comp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+  .aviso .comp div { background: #fff; border-radius: 8px; padding: 8px 10px; border: 1px solid #f3dfa8; }
+  .aviso .comp b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+  .aviso .comp .riscado b { text-decoration: line-through; text-decoration-color: #c0392b; color: #8b6a2b; }
+  .aviso .comp span { font-size: 12px; color: #6b5420; }
+  .aviso p { margin: 6px 0 0; font-size: 13px; }
+
+  .bar { display: flex; height: 24px; border-radius: 6px; overflow: hidden; margin: 6px 0 4px; background: #eee; }
   .bar div { height: 100%; }
-  .legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .row { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; margin: 8px 0; }
+  .legend { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+  .row { display: grid; grid-template-columns: 140px 1fr; gap: 10px; align-items: center; margin: 10px 0; }
   .row label { font-size: 12.5px; }
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
-  th, td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+  th, td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: right; }
   th:first-child, td:first-child { text-align: left; }
-  th { cursor: pointer; user-select: none; color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--bg); }
-  tbody tr { cursor: pointer; }
-  tbody tr:hover { background: #fff; }
-  .tag { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  th { color: var(--muted); font-weight: 600; font-size: 11.5px; }
+  #tabela th { cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--soft); z-index: 1; }
+  #tabela tbody tr { cursor: pointer; }
+  #tabela tbody tr:hover { background: var(--soft); }
+  .tag { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
   .note { color: var(--muted); font-size: 12px; }
-  .tablewrap { max-height: 420px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
-  .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
-  .tabs button { font: inherit; font-size: 12.5px; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
-  .tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .leaflet-popup-content { font-size: 12.5px; }
+  .tablewrap { max-height: 440px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); }
+  .tabs { display: inline-flex; gap: 2px; padding: 3px; background: #e9e6de; border-radius: 999px; align-self: flex-start; }
+  .tabs button { font: inherit; font-size: 12.5px; font-weight: 500; border: 0; background: transparent; border-radius: 999px; padding: 5px 14px; cursor: pointer; color: var(--muted); }
+  .tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+
+  .links { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .links a { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+    text-decoration: none; color: var(--ink); background: var(--soft); transition: border-color .15s, background .15s; }
+  .links a:hover { border-color: var(--bolso); background: #fff; }
+  .links .ico { flex: none; width: 28px; height: 28px; border-radius: 8px; background: var(--brand); color: #fff;
+    display: grid; place-items: center; font-size: 14px; }
+  .links b { display: block; font-size: 13px; font-weight: 600; }
+  .links small { color: var(--muted); font-size: 12px; }
+
+  .leaflet-container { font: inherit; background: #e8eef2; }
+  .leaflet-popup-content-wrapper { border-radius: 10px; box-shadow: var(--shadow); }
+  .leaflet-popup-content { font-size: 12.5px; line-height: 1.5; }
   .leaflet-popup-content h3 { margin: 0 0 4px; font-size: 14px; }
-  @media (max-width: 900px) {
-    main { grid-template-columns: 1fr; height: auto; }
-    #map { height: 60vh; }
-    aside { border-left: 0; }
+  .mapa-legenda { background: rgba(255,255,255,.95); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 12px; box-shadow: var(--shadow); line-height: 1.6; }
+
+  @media (max-width: 960px) {
+    body { display: block; }
+    main { grid-template-columns: 1fr; }
+    #map { height: 62vh; }
+    .controls { margin-left: 0; width: 100%; }
+    aside { padding: 16px; }
+  }
+  @media (max-width: 480px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .row { grid-template-columns: 1fr; gap: 2px; }
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>Seções eleitorais alteradas no 2º turno · 2026</h1>
-  <span class="sub">Locais de votação que mudaram entre o 1º e o 2º turno × resultado de Presidente no 1º turno (TSE)</span>
+  <div class="marca">
+    <span class="eyebrow">Eleições 2026 · 2º turno em 25/10</span>
+    <h1>Seções que mudaram de local</h1>
+    <span class="sub">Locais de votação alterados entre o 1º e o 2º turno × voto para Presidente no 1º turno</span>
+  </div>
   <div class="controls">
     <label>UF <select id="fUf"><option value="">Brasil</option></select></label>
-    <label>Distância mín. (km) <input id="fDist" type="number" min="0" step="0.5" value="0" style="width:70px"></label>
+    <label>Distância mín. (km) <input id="fDist" type="number" min="0" step="0.5" value="0" style="width:80px"></label>
     <label>Camada <select id="fLayer">
       <option value="mun">Cidades</option>
       <option value="sec">Seções (antigo → novo)</option>
@@ -72,6 +126,17 @@
 <main>
   <div id="map"></div>
   <aside>
+    <div class="aviso">
+      <div class="tit">⚠ Checagem do número</div>
+      Várias manchetes falam em <b>4.352 seções</b> com local alterado. O painel oficial do TSE registra <b>2.033</b>.
+      <div class="comp">
+        <div class="riscado"><b>4.352</b><span>citado na imprensa (17/10, atribuído aos TREs)</span></div>
+        <div><b>2.033</b><span>painel oficial do TSE (atualizado em 18/10/2026, 11h27)</span></div>
+      </div>
+      <p>Os números por estado também não batem. A imprensa cita 982 seções em SP e 431 no RJ; o TSE lista 146 e 19.
+      Este site usa apenas o dado oficial. <a href="#fontes">Veja como conferir no TSE ↓</a></p>
+    </div>
+
     <h2>Resumo</h2>
     <div class="kpis" id="kpis"></div>
 
@@ -88,6 +153,30 @@
       <button data-t="sec">Seções</button>
     </div>
     <div class="tablewrap"><table id="tabela"></table></div>
+
+    <h2 id="fontes">Consulte direto no TSE</h2>
+    <div class="card">
+      <ul class="links">
+        <li><a href="https://www.tse.jus.br/servicos-eleitorais/autoatendimento-eleitoral" target="_blank" rel="noopener">
+          <span class="ico">📍</span><span><b>Onde eu voto?</b>
+          <small>Autoatendimento Eleitoral: consulte seu local de votação com CPF, título ou nome. O app e-Título também mostra.</small></span></a></li>
+        <li><a href="https://sig.tse.jus.br/ords/dwapr/r/seai/sig-eleicao-eleitorado/home" target="_blank" rel="noopener">
+          <span class="ico">📊</span><span><b>Painel oficial das seções alteradas</b>
+          <small>Estatísticas → Eleitorado da eleição → Capilaridade → “Seções alteradas”. Filtre por UF, município, zona e local.</small></span></a></li>
+        <li><a href="https://www.tse.jus.br/comunicacao/noticias/2026/Outubro/entenda-por-que-a-justica-eleitoral-trocou-o-endereco-de-algumas-secoes-para-o-2o-turno" target="_blank" rel="noopener">
+          <span class="ico">📰</span><span><b>Nota do TSE sobre as mudanças</b>
+          <small>Por que alguns endereços mudaram: chuvas, reformas, acessibilidade e falta de energia.</small></span></a></li>
+        <li><a href="https://dadosabertos.tse.jus.br/dataset/resultados-2026" target="_blank" rel="noopener">
+          <span class="ico">🗳</span><span><b>Resultados 2026 (dados abertos)</b>
+          <small>Votação por seção, Presidente, 1º turno: <code>votacao_secao_2026_BR.zip</code>.</small></span></a></li>
+        <li><a href="https://dadosabertos.tse.jus.br/dataset/eleitorado-2026" target="_blank" rel="noopener">
+          <span class="ico">🏫</span><span><b>Eleitorado 2026 (dados abertos)</b>
+          <small>Locais de votação de cada seção no 1º e no 2º turno, com coordenadas: <code>eleitorado_local_votacao_2026.zip</code>.</small></span></a></li>
+        <li><a href="https://github.com/kach4n/eleitoral" target="_blank" rel="noopener">
+          <span class="ico">⌘</span><span><b>Código e metodologia</b>
+          <small>Script que cruza os arquivos e o código-fonte deste site.</small></span></a></li>
+      </ul>
+    </div>
     <p class="note" id="rodape"></p>
   </aside>
 </main>

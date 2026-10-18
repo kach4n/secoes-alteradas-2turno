@@ -66,8 +66,7 @@ const camadaSec = L.layerGroup();
 
 const legenda = L.control({ position: 'bottomleft' });
 legenda.onAdd = () => {
-  const d = L.DomUtil.create('div', 'card');
-  d.style.cssText = 'font-size:12px;padding:8px 10px';
+  const d = L.DomUtil.create('div', 'mapa-legenda');
   d.innerHTML = `<b>Cor</b>: voto no 1º turno nas seções alteradas<br>
     <span class="tag" style="background:${COR.lula}"></span>Lula &nbsp;
     <span class="tag" style="background:${COR.bolso}"></span>Bolsonaro<br>
@@ -183,7 +182,7 @@ function desenharPainel(lista) {
     [fmt.format(nZona), 'zonas'],
     [km(tot.dMed), 'deslocamento médio'],
     [fmt.format(longe), 'eleitores a ≥ 2 km'],
-  ].map(([b, s]) => `<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+  ].map(([b, s], i) => `<div class="kpi${i === 0 ? ' destaque' : ''}"><b>${b}</b><span>${s}</span></div>`).join('');
 
   const B = window.BRASIL;
   document.getElementById('votosCard').innerHTML = `
@@ -329,4 +328,4 @@ document.getElementById('rodape').innerHTML =
   ${semCoord} sem coordenadas nos dois turnos (ficam fora do cálculo de distância e aparecem no centro do município).
   Distância é em linha reta entre o local antigo e o novo; não indica se ficou mais perto ou mais longe da casa do eleitor.`;
 
-atualizar(false);
+atualizar(true);
