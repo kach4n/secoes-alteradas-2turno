@@ -51,6 +51,38 @@ ufs.forEach((u) => fUf.add(new Option(u === 'ZZ' ? 'ZZ (exterior)' : u, u)));
 const fDist = document.getElementById('fDist');
 const fLayer = document.getElementById('fLayer');
 
+// ---------- Versões da lista oficial ----------
+const fVersao = document.getElementById('fVersao');
+const ultima = VERSOES[VERSOES.length - 1];
+[...VERSOES].reverse().forEach((v) =>
+  fVersao.add(new Option(v.rotulo + (v === ultima ? ' (mais recente)' : ''), v.id, false, v.id === VERSAO.id)));
+fVersao.addEventListener('change', () => {
+  const u = new URL(location.href);
+  if (fVersao.value === ultima.id) u.searchParams.delete('versao'); else u.searchParams.set('versao', fVersao.value);
+  location.href = u.toString();
+});
+
+function desenharHistorico() {
+  const link = (v) => (v === ultima ? '?' : `?versao=${v.id}`);
+  const linhas = VERSOES.map((v, i) => {
+    const ant = VERSOES[i - 1];
+    const dif = ant ? v.secoes - ant.secoes : null;
+    const var_ = dif == null ? '–' : `${dif > 0 ? '+' : '−'}${fmt.format(Math.abs(dif))}` +
+      (v.sairam != null ? `<br><span class="note">saíram ${fmt.format(v.sairam)}, entraram ${fmt.format(v.entraram)}</span>` : '');
+    const atual = v.id === VERSAO.id;
+    return `<tr${atual ? ' class="atual"' : ''}>
+      <td><a href="${link(v)}">${v.rotulo}</a>${atual ? ' <span class="pill">vendo</span>' : ''}
+        <br><span class="note">painel: ${v.painel}</span></td>
+      <td><b>${fmt.format(v.secoes)}</b></td><td>${fmt.format(v.eleitores)}</td>
+      <td>${fmt.format(v.cidades)}</td><td>${var_}</td></tr>`;
+  }).reverse().join('');
+  document.getElementById('historico').innerHTML = `
+    <table class="hist"><thead><tr><th>Versão</th><th>Seções</th><th>Eleitores</th><th>Cidades</th><th>Variação</th></tr></thead>
+    <tbody>${linhas}</tbody></table>
+    <p class="note" style="margin:8px 0 0">O TSE atualiza a lista ao longo do dia. Cada versão baixada fica guardada aqui;
+    clique numa linha para ver o mapa e as estatísticas daquela versão.</p>`;
+}
+
 function filtradas() {
   const uf = fUf.value, dmin = +fDist.value || 0;
   return secoes.filter((s) => (!uf || s.uf === uf) && (dmin === 0 || (s.d != null && s.d >= dmin)));
@@ -350,4 +382,5 @@ document.getElementById('rodape').innerHTML =
   ${semCoord} sem coordenadas nos dois turnos (ficam fora do cálculo de distância e aparecem no centro do município).
   Distância é em linha reta entre o local antigo e o novo; não indica se ficou mais perto ou mais longe da casa do eleitor.`;
 
+desenharHistorico();
 atualizar(true);

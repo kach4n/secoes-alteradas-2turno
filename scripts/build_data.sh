@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Cruza as seções alteradas no 2º turno com os resultados de Presidente do 1º turno
-# e com as coordenadas dos locais de votação (1º e 2º turno). Gera docs/data.js.
+# e com as coordenadas dos locais de votação (1º e 2º turno). Gera um arquivo de versão em docs/dados/.
+#
+# Uso: bash scripts/build_data.sh [csv] [saida.js]
+#   ex.: bash scripts/build_data.sh "secoes_eleitorais_alteradas_2t-pais_2026 v2.csv" docs/dados/2026-10-18-17h.js
+# Depois registre a versão em docs/dados/versoes.js.
 #
 # Fontes (TSE - dados abertos):
 #   data/raw/votacao_secao_2026_BR.zip            votação por seção, Presidente, 1º turno
@@ -10,10 +14,14 @@ cd "$(dirname "$0")/.."
 
 RAW=data/raw
 OUT=data/out
-mkdir -p "$OUT" docs
+# CSV de seções alteradas: o argumento, ou o mais recente da raiz do projeto
+CSV="${1:-$(ls -t secoes_eleitorais_alteradas_2t-pais_2026*.csv | head -1)}"
+JS="${2:-docs/dados/nova-versao.js}"
+echo "usando: $CSV -> $JS"
+mkdir -p "$OUT" "$(dirname "$JS")"
 
 # 1) Seções alteradas (chave UF|zona|seção)
-iconv -f latin1 -t utf-8 secoes_eleitorais_alteradas_2t-pais_2026.csv | tr -d '\r' \
+iconv -f latin1 -t utf-8 "$CSV" | tr -d '\r' \
   | awk -F';' 'NR>1{print $3"|"$5"|"$7";"$4";"$6";"$8";"$9}' > "$OUT/alteradas.txt"
 
 # 2) Locais de votação: coordenadas por seção e turno; eleitorado por município e zona
@@ -56,7 +64,7 @@ unzip -p "$RAW/votacao_secao_2026_BR.zip" votacao_secao_2026_BR.csv \
 
 echo "ok: $(wc -l < "$OUT/alteradas.txt") alteradas, $(grep -c '^S' "$OUT/locais.txt") linhas de local, $(grep -c '^S' "$OUT/votos.txt") seções com votos"
 
-# 4) Monta docs/data.js
+# 4) Monta o arquivo de dados da versão
 awk -F';' '
   function q(s) { gsub(/"/,"\047",s); return "\"" s "\"" }
   function n(s) { return (s=="" || s=="-1") ? "null" : s+0 }
@@ -79,5 +87,5 @@ awk -F';' '
     printf "};\nwindow.ZONAS={"; c=0
     for (z in uz) printf "%s%s:[%d,%s]\n", (c++?",":""), q(z), ze[z], (z in zv) ? "["zv[z]"]" : "null"
     printf "};\nwindow.BRASIL=[%d,%d,%d,%d,%d];\n", br[1],br[2],br[3],br[4],br[5]
-  }' "$OUT/alteradas.txt" "$OUT/locais.txt" "$OUT/votos.txt" > docs/data.js
-echo "docs/data.js: $(wc -c < docs/data.js) bytes"
+  }' "$OUT/alteradas.txt" "$OUT/locais.txt" "$OUT/votos.txt" > "$JS"
+echo "$JS: $(wc -c < "$JS") bytes"

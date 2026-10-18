@@ -80,6 +80,11 @@
   .tabs button { font: inherit; font-size: 12.5px; font-weight: 500; border: 0; background: transparent; border-radius: 999px; padding: 5px 14px; cursor: pointer; color: var(--muted); }
   .tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 
+  .hist td, .hist th { vertical-align: top; white-space: normal; }
+  .hist tr.atual td { background: #eef3fb; }
+  .hist a { font-weight: 600; text-decoration: none; }
+  .pill { display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    background: var(--brand); color: #fff; border-radius: 999px; padding: 1px 7px; margin-left: 4px; vertical-align: 1px; }
   .links { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .links a { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
     text-decoration: none; color: var(--ink); background: var(--soft); transition: border-color .15s, background .15s; }
@@ -118,6 +123,7 @@
   <div class="controls">
     <label>UF <select id="fUf"><option value="">Brasil</option></select></label>
     <label>Distância mín. (km) <input id="fDist" type="number" min="0" step="0.5" value="0" style="width:80px"></label>
+    <label>Versão do dado <select id="fVersao"></select></label>
     <label>Camada <select id="fLayer">
       <option value="mun">Cidades</option>
       <option value="sec">Seções (antigo → novo)</option>
@@ -130,14 +136,19 @@
   <aside>
     <div class="aviso">
       <div class="tit">⚠ Checagem do número</div>
-      Várias manchetes falam em <b>4.352 seções</b> com local alterado. O painel oficial do TSE registra <b>2.033</b>.
+      Várias manchetes falam em <b>4.352 seções</b> com local alterado. O painel oficial do TSE registra <b>1.396</b>.
       <div class="comp">
         <div class="riscado"><b>4.352</b><span>citado na imprensa (17/10, atribuído aos TREs)</span></div>
-        <div><b>2.033</b><span>painel oficial do TSE (atualizado em 18/10/2026, 11h27)</span></div>
+        <div><b>1.396</b><span>painel oficial do TSE (atualizado em 18/10/2026, 17h17)</span></div>
       </div>
-      <p>Os números por estado também não batem. A imprensa cita 982 seções em SP e 431 no RJ; o TSE lista 146 e 19.
-      Este site usa apenas o dado oficial. <a href="#fontes">Veja como conferir no TSE ↓</a></p>
+      <p>O número oficial também mudou durante o dia: às 11h27 o painel mostrava 2.033. Na atualização das 17h17,
+      653 seções saíram da lista e 16 entraram.</p>
+      <p>Os números por estado também não batem. A imprensa cita 982 seções em SP e 431 no RJ; o TSE lista hoje 55 em SP
+      e nenhuma no RJ. Este site usa apenas o dado oficial mais recente. <a href="#fontes">Veja como conferir no TSE ↓</a></p>
     </div>
+
+    <h2>Histórico da lista oficial</h2>
+    <div class="card" id="historico"></div>
 
     <h2>Resumo</h2>
     <div class="kpis" id="kpis"></div>
@@ -183,7 +194,12 @@
   </aside>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="data.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<script src="dados/versoes.js?v=4"></script>
+<script>
+  // Escolhe a versão pela URL (?versao=...) e carrega o arquivo de dados dela; padrão = a mais recente
+  window.VERSAO = VERSOES.find((v) => v.id === new URLSearchParams(location.search).get("versao")) || VERSOES[VERSOES.length - 1];
+  document.write(`<script src="dados/${VERSAO.arquivo}?v=4"><\/script>`);
+</script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
