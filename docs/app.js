@@ -70,7 +70,7 @@ legenda.onAdd = () => {
   d.innerHTML = `<b>Cor</b>: voto no 1º turno nas seções alteradas<br>
     <span class="tag" style="background:${COR.lula}"></span>Lula &nbsp;
     <span class="tag" style="background:${COR.bolso}"></span>Bolsonaro<br>
-    <span class="note">Círculo = eleitores afetados · Linha = local antigo → novo</span>`;
+    <span class="note">Tamanho = eleitores afetados · Linha = local antigo → novo<br>Na camada de seções, cada marca é uma mudança de local (pode reunir várias seções)</span>`;
   return d;
 };
 legenda.addTo(map);
@@ -99,6 +99,7 @@ function popupMun(a) {
   return `<h3>${s.mun} / ${s.uf}</h3>
     <b>${fmt.format(a.eleitores)}</b> eleitores em <b>${a.secoes.length}</b> seções alteradas
     ${m ? `(${pct(a.eleitores / m[1])} do eleitorado)` : ''}<br>
+    ${(() => { const n = mudancas(a.secoes).length; return `${n} ${n === 1 ? 'mudança' : 'mudanças'} de local de votação`; })()}<br>
     Distância média: ${km(a.dMed)}<br>
     <b>Seções alteradas:</b> Lula ${fmt.format(a.v[0])} × Bolsonaro ${fmt.format(a.v[1])}
     (${pct(share2(a.v))} Lula)<br>
@@ -112,6 +113,21 @@ function popupSec(s) {
     <b>De:</b> ${s.ini}<br><b>Para:</b> ${s.fin}<br>
     ${v ? `1º turno: Lula ${v[0]} · Bolsonaro ${v[1]} · outros ${v[2]} · brancos ${v[3]} · nulos ${v[4]}`
         : '<i>sem votação no 1º turno</i>'}`;
+}
+
+// Agrupa seções que saíram do mesmo local e foram para o mesmo local
+const mudancas = (lista) =>
+  agrupar(lista, (s) => [s.mk, s.ini, s.fin, s.la1, s.lo1, s.la2, s.lo2].join('|'));
+
+function popupMudanca(g) {
+  const s = g.secoes[0];
+  const nums = g.secoes.map((x) => (x.zona === s.zona ? x.secao : `${x.secao} (Z${x.zona})`)).join(', ');
+  return `<h3>${s.mun}/${s.uf} · Zona ${s.zona}</h3>
+    <b>${g.secoes.length} seções</b> · ${fmt.format(g.eleitores)} eleitores · deslocamento ${km(s.d)}<br>
+    <b>De:</b> ${s.ini}<br><b>Para:</b> ${s.fin}<br>
+    1º turno: Lula ${fmt.format(g.v[0])} · Bolsonaro ${fmt.format(g.v[1])} · outros ${fmt.format(g.v[2])}
+    · brancos ${fmt.format(g.v[3])} · nulos ${fmt.format(g.v[4])}<br>
+    <span class="note">Seções: ${nums}</span>`;
 }
 
 function desenharMapa(lista, ajustar) {
@@ -128,17 +144,23 @@ function desenharMapa(lista, ajustar) {
       color: '#fff', weight: 1, fillColor: corDiv(share2(a.v)), fillOpacity: 0.85,
     }).bindPopup(popupMun(a)).addTo(camadaMun);
   }
-  for (const s of lista) {
+  // Seções do mesmo local têm as mesmas coordenadas: desenha uma marca por mudança de local
+  for (const g of mudancas(lista)) {
+    const s = g.secoes[0];
     if (s.lat == null) continue;
-    const c = s.venc === 'lula' ? COR.lula : s.venc === 'bolso' ? COR.bolso : COR.neutro;
+    const venc = vencedor(g.v);
+    const c = venc === 'lula' ? COR.lula : venc === 'bolso' ? COR.bolso : COR.neutro;
+    const r = Math.min(22, 4 + Math.sqrt(g.eleitores) / 6);
+    const pop = g.secoes.length === 1 ? popupSec(s) : popupMudanca(g);
     if (s.la1 != null && s.la2 != null && s.d > 0.01) {
-      L.polyline([[s.la1, s.lo1], [s.la2, s.lo2]], { color: c, weight: 1.5, opacity: 0.6, dashArray: '4 3' })
-        .addTo(camadaSec);
-      L.circleMarker([s.la1, s.lo1], { radius: 3, color: c, weight: 1, fillColor: '#fff', fillOpacity: 1 })
-        .bindPopup(popupSec(s)).addTo(camadaSec);
+      L.polyline([[s.la1, s.lo1], [s.la2, s.lo2]], {
+        color: c, weight: Math.min(6, 1.5 + g.secoes.length / 5), opacity: 0.6, dashArray: '4 3',
+      }).addTo(camadaSec);
+      L.circleMarker([s.la1, s.lo1], { radius: Math.max(3, r * 0.6), color: c, weight: 1.5, fillColor: '#fff', fillOpacity: 1 })
+        .bindPopup(pop).addTo(camadaSec);
     }
-    L.circleMarker([s.lat, s.lon], { radius: 4, color: '#fff', weight: 1, fillColor: c, fillOpacity: 0.9 })
-      .bindPopup(popupSec(s)).addTo(camadaSec);
+    L.circleMarker([s.lat, s.lon], { radius: r, color: '#fff', weight: 1, fillColor: c, fillOpacity: 0.9 })
+      .bindPopup(pop).addTo(camadaSec);
   }
   const modo = fLayer.value;
   map[modo === 'sec' ? 'removeLayer' : 'addLayer'](camadaMun);
