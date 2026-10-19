@@ -152,7 +152,7 @@
       </div>
       <ol class="tempo" id="linhaTempo"></ol>
       <p>Muitas seções que estavam na lista deixaram de constar nela (o TSE não informa o motivo de cada exclusão). A imprensa citava, por exemplo,
-      982 seções em SP e 431 no RJ; a versão mais recente do TSE lista 55 em SP e nenhuma no RJ.
+      982 seções em SP e 431 no RJ; a versão mais recente do TSE lista 48 em SP e nenhuma no RJ.
       Este site mostra o dado oficial mais recente, e as versões anteriores ficam no histórico.
       <a href="#fontes">Veja como conferir no TSE ↓</a></p>
     </div>
@@ -204,12 +204,12 @@
   </aside>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="dados/versoes.js?v=5"></script>
+<script src="dados/versoes.js?v=6"></script>
 <script>
   // Escolhe a versão pela URL (?versao=...) e carrega o arquivo de dados dela; padrão = a mais recente
   window.VERSAO = VERSOES.find((v) => v.id === new URLSearchParams(location.search).get("versao")) || VERSOES[VERSOES.length - 1];
-  document.write(`<script src="dados/${VERSAO.arquivo}?v=5"><\/script>`);
+  document.write(`<script src="dados/${VERSAO.arquivo}?v=6"><\/script>`);
 </script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

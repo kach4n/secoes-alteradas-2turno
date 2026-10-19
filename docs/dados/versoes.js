@@ -12,4 +12,9 @@ window.VERSOES = [
     arquivo: '2026-10-18-17h.js', csv: 'secoes_eleitorais_alteradas_2t-pais_2026 v2.csv',
     secoes: 1396, eleitores: 402599, cidades: 240, zonas: 205, sairam: 653, entraram: 16,
   },
+  {
+    id: '2026-10-19-11h', rotulo: '19/10 · 11h', painel: '19/10/2026, 11h27',
+    arquivo: '2026-10-19-11h.js', csv: 'secoes_eleitorais_alteradas_2t-pais_2026v3.csv',
+    secoes: 554, eleitores: 163567, cidades: 111, zonas: 98, sairam: 892, entraram: 50,
+  },
 ];
