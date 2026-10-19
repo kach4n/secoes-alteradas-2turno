@@ -40,7 +40,6 @@ const secoes = SECOES.map((r) => {
   const lat = la2 ?? la1 ?? m?.[2], lon = lo2 ?? lo1 ?? m?.[3];
   return {
     uf, zona, secao, cd, mun, eleitores, ini, fin, la1, lo1, la2, lo2, v, d, lat, lon, mk, zk,
-    venc: vencedor(v), vencZona: vencedor(ZONAS[zk]?.[1]), vencMun: vencedor(m?.[4]),
   };
 });
 
@@ -228,16 +227,6 @@ function barra(v) {
     <span>Outros ${pct(v[2] / tot)}</span><span>Br+Nulo ${pct((v[3] + v[4]) / tot)}</span></div>`;
 }
 
-function divisao(rotulo, lista, campo) {
-  let l = 0, b = 0, t = 0;
-  for (const s of lista) { t += s.eleitores; if (s[campo] === 'lula') l += s.eleitores; else if (s[campo] === 'bolso') b += s.eleitores; }
-  return `<div class="row"><label>${rotulo}</label><div>
-    <div class="bar"><div style="width:${(100 * l) / (t || 1)}%;background:${COR.lula}"></div>
-    <div style="width:${(100 * b) / (t || 1)}%;background:${COR.bolso}"></div></div>
-    <div class="legend"><span>${fmt.format(l)} eleitores (${pct(l / t)})</span><span>${fmt.format(b)} (${pct(b / t)})</span></div>
-  </div></div>`;
-}
-
 let cenario = 5;
 function desenharPainel(lista) {
   const tot = agrupar(lista, () => 'all')[0] || { eleitores: 0, v: [0, 0, 0, 0, 0], dMed: null, secoes: [] };
@@ -270,23 +259,23 @@ function desenharPainel(lista) {
   const margemSec = tot.v[0] - tot.v[1];
   const efeito = (cenario / 100) * margemSec;
   const margemBR = B[1] - B[0];
+  const perde = (v) => fmt.format(Math.round((cenario / 100) * v));
+  const ganhador = efeito >= 0 ? 'Bolsonaro' : 'Lula';
   document.getElementById('impactoCard').innerHTML = `
-    <div class="note">Eleitores afetados, divididos por quem venceu no 1º turno:</div>
-    ${divisao('na própria seção', lista, 'venc')}
-    ${divisao('na zona eleitoral', lista, 'vencZona')}
-    ${divisao('no município', lista, 'vencMun')}
-    <table style="margin-top:10px">
+    <label style="font-size:13px">Se
+      <input id="cen" type="number" min="0" max="100" step="1" value="${cenario}" style="width:52px">%
+      de quem votou nessas seções no 1º turno não for votar:</label>
+    <p style="margin:8px 0">Lula perde <b>${perde(tot.v[0])}</b> votos e Bolsonaro perde <b>${perde(tot.v[1])}</b>.<br>
+      Quem se beneficia: <b style="color:${efeito >= 0 ? COR.bolso : COR.lula}">${ganhador}, por
+      ${fmt.format(Math.round(Math.abs(efeito)))} votos</b>.</p>
+    <p class="note" style="margin:0 0 10px">Isso equivale a ${fmt.format(100 * Math.abs(efeito) / Math.abs(margemBR)).replace(/^0$/, "<0,01")}%
+      da diferença nacional entre os dois no 1º turno (${fmt.format(Math.abs(margemBR))} votos).</p>
+    <table>
       <tr><th></th><th style="color:${COR.lula}">Lula</th><th style="color:${COR.bolso}">Bolsonaro</th></tr>
       <tr><td>Votos (1º turno) nas seções alteradas</td><td>${fmt.format(tot.v[0])}</td><td>${fmt.format(tot.v[1])}</td></tr>
       <tr><td>Deslocamento médio do eleitor</td><td>${km(pl ? dl / pl : null)}</td><td>${km(pb ? db / pb : null)}</td></tr>
       <tr><td>Votos em seções movidas ≥ 2 km</td><td>${fmt.format(l2)}</td><td>${fmt.format(b2)}</td></tr>
-    </table>
-    <div class="row" style="margin-top:12px"><label>Cenário: abstenção extra de
-      <input id="cen" type="number" min="0" max="100" step="1" value="${cenario}" style="width:52px">%</label>
-      <div class="note">Se essa fração dos votantes das seções alteradas deixar de votar, igual para os dois lados,
-      a margem muda <b style="color:${efeito >= 0 ? COR.bolso : COR.lula}">${fmt.format(Math.round(Math.abs(efeito)))} votos
-      a favor de ${efeito >= 0 ? 'Bolsonaro' : 'Lula'}</b>
-      (${fmt.format(100 * Math.abs(efeito) / Math.abs(margemBR)).replace(/^0$/, "<0,01")}% da diferença nacional do 1º turno, de ${fmt.format(Math.abs(margemBR))}).</div></div>`;
+    </table>`;
   document.getElementById('cen').addEventListener('change', (e) => { cenario = +e.target.value || 0; atualizar(false); });
 }
 

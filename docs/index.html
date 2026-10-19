@@ -166,7 +166,7 @@
     <h2>Votos do 1º turno nas seções alteradas</h2>
     <div class="card" id="votosCard"></div>
 
-    <h2>Quem é mais afetado?</h2>
+    <h2>Quem ganha se esses eleitores faltarem?</h2>
     <div class="card" id="impactoCard"></div>
 
     <h2>Ranking</h2>
@@ -210,6 +210,6 @@
   window.VERSAO = VERSOES.find((v) => v.id === new URLSearchParams(location.search).get("versao")) || VERSOES[VERSOES.length - 1];
   document.write(`<script src="dados/${VERSAO.arquivo}?v=6"><\/script>`);
 </script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>
